@@ -5,7 +5,8 @@ from db.models.courier_model import Courier
 from db.models.user_model import User
 from service.schemas.courier_schema import CourierCreate,CourierUpdate
 from ...utils.user_utils import check_admin_role
-
+from service.core.rabbitmq.producer import create_courier_in_service
+from ...utils.mongo_check import branch_exists
 
 router = APIRouter()
 
@@ -20,15 +21,18 @@ async def create_courier(courier_data: CourierCreate, db:db_dependency,user:user
     raise HTTPException(status_code=404, detail="User not found")
   if str(user_data.role)[9:] != "user":
     raise HTTPException(status_code=400, detail="Юзер вже працює в компанії")
+  await branch_exists(courier_data.branch_from)
   courier=Courier(
     user_id=courier_data.user_id,
     vehicle=courier_data.vehicle,
     active=courier_data.active,
-    locate=courier_data.locate
+    branch_from=courier_data.branch_from
   )
   user_data.role = "courier"
   db.add(courier)
   db.commit()
+  db.refresh(courier)
+  create_courier_in_service(courier)
 
   return courier
 

@@ -5,7 +5,7 @@ class CourierCreate(BaseModel):
   user_id:int
   vehicle:Optional[str] = None
   active:bool = True
-  locate: str = ""  # lat, lng, address
+  branch_from: int
 
 
 class CourierUpdate(BaseModel):

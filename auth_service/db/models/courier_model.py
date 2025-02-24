@@ -13,3 +13,12 @@ class Courier(Base):
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
 
     user = relationship("User")
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "vehicle": self.vehicle,
+            "active": self.active,
+            "branch_from": self.branch_from,
+            # додайте інші атрибути, які хочете серіалізувати
+        }
