@@ -13,7 +13,7 @@ def accept_shipment(tracking_number: str, db: db_dependency, user: user_dependen
     verify_worker_role(user)
     shipment = get_shipment(tracking_number, db)
     
-    if shipment.status == "awaiting shipment":
+    if shipment.status == "awaiting_shipment":
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Посилка вже на пошті")
     shipment.location = shipment.branch_from
     shipment.status = "awaiting_shipment"

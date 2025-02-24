@@ -41,7 +41,7 @@ def create_access_token(email:str,id:int,role:str, expires_delta: timedelta = No
     to_encode = {
         "sub":email,
         "id":id,
-        "role":role[8:],
+        "role":role[9:],
     }
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
