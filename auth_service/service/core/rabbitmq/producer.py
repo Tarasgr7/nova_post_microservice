@@ -32,3 +32,29 @@ def create_courier_in_service(courier):
         body=json.dumps(courier_data)
     )
     connection.close()
+
+def update_courier_in_service(courier):
+    connection = get_connection()
+    channel = connection.channel()
+    courier_data = courier.to_dict()
+    
+    channel.exchange_declare(exchange='auth_exchange', exchange_type='topic')
+    channel.basic_publish(
+        exchange='auth_exchange',
+        routing_key='courier.update',
+        body=json.dumps(courier_data)
+    )
+    connection.close()
+
+def delete_courier_in_service(courier):
+    connection = get_connection()
+    channel = connection.channel()
+    courier_data = courier.to_dict()
+    
+    channel.exchange_declare(exchange='auth_exchange', exchange_type='topic')
+    channel.basic_publish(
+        exchange='auth_exchange',
+        routing_key='courier.delete',
+        body=json.dumps(courier_data)
+    )
+    connection.close()

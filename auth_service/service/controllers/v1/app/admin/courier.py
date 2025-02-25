@@ -5,8 +5,9 @@ from db.models.courier_model import Courier
 from db.models.user_model import User
 from service.schemas.courier_schema import CourierCreate,CourierUpdate
 from ...utils.user_utils import check_admin_role
-from service.core.rabbitmq.producer import create_courier_in_service
+from service.core.rabbitmq.producer import create_courier_in_service,update_courier_in_service,delete_courier_in_service
 from ...utils.mongo_check import branch_exists
+from copy import deepcopy
 
 router = APIRouter()
 
@@ -69,6 +70,7 @@ async def update_courier(courier_id: int, courier_data: CourierUpdate, db: db_de
   courier.vehicle = courier_data.vehicle
   db.commit()
   db.refresh(courier)
+  update_courier_in_service(courier)
   return courier
 
 @router.delete('/{courier_id}',status_code=status.HTTP_200_OK)
@@ -77,6 +79,7 @@ async def delete_courier(courier_id: int, db: db_dependency, user: user_dependen
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
   check_admin_role(user)
   courier = db.query(Courier).filter(Courier.id == courier_id).first()
+  courier_copy=deepcopy(courier)
   if not courier:
     raise HTTPException(status_code=404, detail="Courier not found")
   user_data = db.query(User).filter(User.id == courier.user_id).first()
@@ -84,4 +87,5 @@ async def delete_courier(courier_id: int, db: db_dependency, user: user_dependen
     raise HTTPException(status_code=404, detail="User not found")
   user_data.role = "user"
   db.delete(courier)
+  delete_courier_in_service(courier_copy)
   db.commit()

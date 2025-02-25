@@ -47,6 +47,26 @@ def start_consumer():
         print(f"Error saving courier: {e}")
       finally:
         db.close()
+  def update_courier(ch, method, properties, body):
+    data=json.loads(body)
+    courier_data=db.query(Courier).filter(Courier.user_id==data['user_id']).first()
+    if courier_data:
+      if data.get('vehicle'):
+        courier_data.vehicle=data.get('vehicle')
+      if data.get('branch_from'):
+        courier_data.branch_from=data.get('branch_from')
+      if data.get('active'):
+        courier_data.active=data.get('active')
+    db.commit()
+    db.refresh(courier_data)
+
+  def delete_courier(ch, method, properties, body):
+      data=json.loads(body)
+      courier_data=db.query(Courier).filter(Courier.user_id==data['user_id']).first()
+      print(courier_data)
+      if courier_data:
+        db.delete(courier_data)
+        db.commit()
 
 
   connection = get_connection()
@@ -55,6 +75,12 @@ def start_consumer():
   channel.queue_declare(queue='courier.create')
   channel.queue_bind(exchange='auth_exchange', queue='courier.create', routing_key='courier.create')
   channel.basic_consume(queue='courier.create', on_message_callback=create_courier, auto_ack=True)
+  channel.queue_declare(queue='courier.update')
+  channel.queue_bind(exchange='auth_exchange', queue='courier.update', routing_key='courier.update')
+  channel.basic_consume(queue='courier.update', on_message_callback=update_courier, auto_ack=True)
+  channel.queue_declare(queue='courier.delete')
+  channel.queue_bind(exchange='auth_exchange', queue='courier.delete', routing_key='courier.delete')
+  channel.basic_consume(queue='courier.delete', on_message_callback=delete_courier, auto_ack=True)
 
   channel.start_consuming()
 
