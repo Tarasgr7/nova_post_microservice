@@ -35,6 +35,13 @@ class Shipment(Base):
     barcode_path=Column(String, nullable=True)  
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
 
+    def to_dict(self):
+        return{
+            "id": self.id,
+            "branch_from": self.branch_from,
+            "branch_to": self.branch_to,
+        }
+
 
 class ShipmentStatus(Base):
     __tablename__ = "shipment_statuses"

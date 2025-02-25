@@ -1,8 +1,9 @@
 from fastapi import APIRouter
-from .route  import router as route_router
-
+from .app import route
+from .app import parcel
 
 
 app_router = APIRouter()
 
-app_router.include_router(route_router, prefix="/route",tags=["Try rabbit"])
+app_router.include_router(route.router, prefix="/route",tags=["Route",])
+app_router.include_router(parcel.router, prefix="/parcel", tags=["Parcel",])

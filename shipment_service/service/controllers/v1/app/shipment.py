@@ -7,6 +7,7 @@ from ..utils.auth import user_dependency
 from ..utils.barcode import generate_barcode
 from ..utils.mongo_check import check_user_in_mongo,branch_exists
 from ..utils.shipment_utils import create_tracking_number,add_shipment_status,existing_status,calculate_distance,calculate_delivery_price
+from service.core.rabbitmq.producer import create_shipment_in_service,delete_shipment_in_service
 
 
 router=APIRouter()
@@ -51,6 +52,7 @@ async def create_shipment(shipment:ShipmentCreate, user:user_dependency, db:db_d
     add_shipment_status(tracking_number,'created',db)
     logger.info(f"Створення нової посилки із номером: {tracking_number}")
     db.refresh(create_shipment)
+    create_shipment_in_service(create_shipment)
     return create_shipment
 
 @router.get('/my-shipments', status_code=status.HTTP_200_OK)
@@ -98,9 +100,13 @@ async def delete_shipment(tracking_number: str, db: db_dependency, user: user_de
     shipment = db.query(Shipment).filter(Shipment.tracking_number == tracking_number).first()
     if not shipment:
         raise HTTPException(status_code=404, detail="Замовлення не знайдено")
+    print(shipment)
     if user.get("id") != shipment.sender_id:
         raise HTTPException(status_code=403, detail="Тільки відправник може видалити замовлення")
-    
+    shipment_statuses=db.query(ShipmentStatus).filter(ShipmentStatus.shipment_id == shipment.id).all()
+    for status in shipment_statuses:
+        db.delete(status)
+    delete_shipment_in_service(shipment)
     db.delete(shipment)
     db.commit()
     logger.info(f"Замовлення {tracking_number} видалено користувачем {user.get('id')}")

@@ -5,7 +5,6 @@ from datetime import datetime
 
 class Route(Base):
     __tablename__ = "routes"
-
     id = Column(Integer, primary_key=True, index=True)
     name=Column(String, nullable=True)
     courier_id = Column(Integer, nullable=True, index=True)  # Кур'єр, який здійснює маршрут

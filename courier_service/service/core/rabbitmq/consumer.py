@@ -2,7 +2,10 @@ import pika
 import json
 import time
 from db.models.courier_models import Courier
-from db.dependencies import get_db
+from db.models.parcel_model import Parcel
+from db.dependencies import get_db,logger
+from service.controllers.v1.utils.parsel_utils import create_parcel
+
 from sqlalchemy.orm import Session
 RABBITMQ_HOST = "127.0.0.1"
 RABBITMQ_USER = "admin"
@@ -22,7 +25,7 @@ def get_connection(retries=5, delay=5):
     raise Exception("Не вдалося підключитися до RabbitMQ.")
 
 
-def start_consumer():
+def start_consumer_for_auth():
   db: Session = next(get_db())
   def create_courier(ch, method, properties, body):
       data = json.loads(body)
@@ -67,33 +70,42 @@ def start_consumer():
       if courier_data:
         db.delete(courier_data)
         db.commit()
-
+  def create_shipment(ch, method, properties, body):
+     data = json.loads(body)
+     print(f"Shipment created: {data}")
+     create_parcel(data.get('branch_from'), data.get('branch_to'), data.get('id'),db)
+     logger.info(f"Created parcel: {data}")
+  def delete_shipment(ch, method, properties, body):
+      data=json.loads(body)
+      shipment_data=db.query(Parcel).filter(Parcel.shipment_id==data['id']).first()
+      if shipment_data:
+        print(f"Delete{shipment_data}")
+        db.delete(shipment_data)
+        db.commit()
 
   connection = get_connection()
   channel = connection.channel()
   channel.exchange_declare(exchange='auth_exchange', exchange_type='topic')
+  #Connect to Courier.create queue
   channel.queue_declare(queue='courier.create')
   channel.queue_bind(exchange='auth_exchange', queue='courier.create', routing_key='courier.create')
   channel.basic_consume(queue='courier.create', on_message_callback=create_courier, auto_ack=True)
+  #Connect to Courier.update queue
   channel.queue_declare(queue='courier.update')
   channel.queue_bind(exchange='auth_exchange', queue='courier.update', routing_key='courier.update')
   channel.basic_consume(queue='courier.update', on_message_callback=update_courier, auto_ack=True)
+  #Connect to Courier.delete queue
   channel.queue_declare(queue='courier.delete')
   channel.queue_bind(exchange='auth_exchange', queue='courier.delete', routing_key='courier.delete')
   channel.basic_consume(queue='courier.delete', on_message_callback=delete_courier, auto_ack=True)
+  channel.exchange_declare(exchange='shipment_exchange', exchange_type='topic')
+  #Connect to Shipment.create queue
+  channel.queue_declare(queue='shipment.create')
+  channel.queue_bind(exchange='shipment_exchange', queue='shipment.create', routing_key='shipment.create')
+  channel.basic_consume(queue='shipment.create', on_message_callback=create_shipment, auto_ack=True)
+  #Connect to Shipment.delete queue
+  channel.queue_declare(queue='shipment.delete')
+  channel.queue_bind(exchange='shipment_exchange', queue='shipment.delete', routing_key='shipment.delete')
+  channel.basic_consume(queue='shipment.delete', on_message_callback=delete_shipment, auto_ack=True)
 
   channel.start_consuming()
-
-
-# def start_worker():
-#     connection = get_connection()
-#     channel = connection.channel()
-#     channel.queue_declare(queue=REQUEST_QUEUE)
-#     channel.queue_declare(queue=RESPONSE_QUEUE)
-
-#     def on_request(ch, method, props, body):
-#         request = json.loads(body)
-#         print(request)
-
-#     channel.basic_consume(queue=REQUEST_QUEUE, on_message_callback=on_request)
-#     channel.start_consuming()
