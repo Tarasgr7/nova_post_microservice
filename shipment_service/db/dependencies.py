@@ -25,14 +25,6 @@ def get_db_url():
   return f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 
-#Якщо через докер
-# def get_db_url():
-#   DB_NAME=os.getenv("DB_NAME")
-#   DB_USER=os.getenv("DOCKER_USER")
-#   DB_PASSWORD=os.getenv("DOCKER_PASSWORD")
-#   DB_HOST=os.getenv("DOCKER_HOST")
-#   DB_PORT=os.getenv("DOCKER_PORT")
-#   return f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 DATABASE_URL = get_db_url()
 
