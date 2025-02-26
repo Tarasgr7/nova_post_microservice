@@ -21,12 +21,15 @@ def check_admin_role(user):
         logger.warning(f"Невдала спроба доступу користувача: {user.get('id')} з роллю: {user.get('role')}")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ви не є адміністратором")
     logger.info(f"Користувач {user.get('id')} підтверджений як адміністратор.")
+    return True
 
 def check_courier_role(user):
+    print(user.get('role'))
     if user.get("role") != "courier":
         logger.warning(f"Невдала спроба доступу користувача: {user.get('id')} з роллю: {user.get('role')}")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ви не є кур'єром ")
     logger.info(f"Користувач {user.get('id')} підтверджений як кур'єр.")
+    return True
 
 
 

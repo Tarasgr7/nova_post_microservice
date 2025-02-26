@@ -52,7 +52,6 @@ async def create_shipment(shipment:ShipmentCreate, user:user_dependency, db:db_d
     add_shipment_status(tracking_number,'created',db)
     logger.info(f"Створення нової посилки із номером: {tracking_number}")
     db.refresh(create_shipment)
-    create_shipment_in_service(create_shipment)
     return create_shipment
 
 @router.get('/my-shipments', status_code=status.HTTP_200_OK)

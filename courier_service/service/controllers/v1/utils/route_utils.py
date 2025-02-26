@@ -9,7 +9,7 @@ def check_or_create_route(branch_from,branch_to):
 
   db: Session = next(get_db())
   courier_id=get_not_busy_courier(branch_from)
-  check_exists_route=db.query(Route).filter(Route.branch_from==branch_from,Route.branch_to==branch_to).first()
+  check_exists_route=db.query(Route).filter(Route.branch_from==branch_from,Route.branch_to==branch_to,Route.status=="assigned").first()
   if check_exists_route:
     return check_exists_route.id
   new_route = Route(name=f"Departure from Branch ID: {branch_from} to Branch ID:{branch_to}", courier_id=courier_id, branch_from=branch_from, branch_to=branch_to)

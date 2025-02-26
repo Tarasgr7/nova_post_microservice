@@ -8,3 +8,184 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yml:/etc/promtail/promtail-config.yml
+      - /var/run/docker.sock:/var/run/docker.sock  # Моніторинг Docker-контейнерів
+    command: -config.file=/etc/promtail/promtail-config.yml
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - loki
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+  auth_service:
+    build: ./auth_service
+    container_name: auth_service
+    environment:
+      DB_HOST: auth_postgres
+      DB_PORT: 5432
+      DB_NAME: users_db
+      DB_USER: postgres
+      DB_PASSWORD: admin
+    ports:
+      - "8000:8000"
+    labels:
+      logging: "auth_service"  # Лейбл для Promtail
+    volumes:
+      - ./logs/auth_service:/app/logs  # Логи окремо для auth_service
+    depends_on:
+      - loki
+      - promtail
+      - rabbitmq
+      - auth_postgres
+    restart: always
+    env_file:
+      - ./auth_service/.env
+  
+  branch_service:
+    build: ./branch_service
+    container_name: branch_service
+    environment:
+      DB_NAME: branch_db
+      DB_USER: postgres
+      DB_PASSWORD: admin
+      DB_HOST: branch_postgres
+      DB_PORT: 5432
+    ports:
+      - "8001:8001"
+    labels:
+      logging: "branch_service"  # Лейбл для Promtail
+    volumes:
+      - ./logs/branch_service:/app/logs  # Логи окремо для branch_service
+    depends_on:
+      - loki
+      - promtail
+      - rabbitmq
+      - branch_postgres
+    restart: always
+    env_file:
+      - ./branch_service/.env
+  
+  courier_service:
+    build: ./courier_service
+    container_name: courier_service
+    environment:
+      DB_HOST: courier_postgres
+      DB_PORT: 5432
+      DB_NAME: courier_db
+      DB_USER: postgres
+      DB_PASSWORD: admin
+    ports:
+      - "8002:8002"
+    labels:
+      logging: "courier_service"  # Лейбл для Promtail
+    volumes:
+      - ./logs/courier_service:/app/logs  # Логи окремо для courier_service
+    depends_on:
+      - loki
+      - promtail
+      - rabbitmq
+      - courier_postgres
+    restart: always
+    env_file:
+      - ./courier_service/.env
+  
+  shipment_service:
+    build: ./shipment_service
+    container_name: shipment_service
+    environment:
+      DB_HOST: shipment_postgres
+      DB_PORT: 5432
+      DB_NAME: shipment_db
+      DB_USER: postgres
+      DB_PASSWORD: admin
+    ports:
+      - "8003:8003"
+    labels:
+      logging: "shipment_service"  # Лейбл для Promtail
+    volumes:
+      - ./logs/shipment_service:/app/logs  # Логи окремо для shipment_service
+    depends_on:
+      - loki
+      - promtail
+      - rabbitmq
+      - shipment_postgres
+    restart: always
+    env_file:
+      - ./shipment_service/.env
+  
+  auth_postgres:
+    image: postgres:latest
+    container_name: auth_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: users_db
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Порт для підключення до auth_postgres (не конфліктує з іншими)
+
+  branch_postgres:
+    image: postgres:latest
+    container_name: branch_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: branch_db
+    volumes:
+      - branch_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"  # Порт для підключення до branch_postgres
+
+  courier_postgres:
+    image: postgres:latest
+    container_name: courier_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: courier_db
+    volumes:
+      - courier_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"  # Порт для підключення до courier_postgres
+
+  shipment_postgres:
+    image: postgres:latest
+    container_name: shipment_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: shipment_db
+    volumes:
+      - shipment_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"  # Порт для підключення до shipment_postgres
+
+volumes:
+  auth_postgres_data:
+  branch_postgres_data:
+  courier_postgres_data:
+  shipment_postgres_data:

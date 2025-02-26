@@ -2,8 +2,8 @@ from math import radians, sin, cos, sqrt, atan2
 import uuid
 from db.models.shipment_model import Shipment,ShipmentStatus
 from fastapi import HTTPException,status
-from db.dependencies import logger
-
+from db.dependencies import logger,get_db
+from sqlalchemy.orm import Session
 
 
 
@@ -64,6 +64,20 @@ def calculate_delivery_price(distance_km, weight, length, width):
     return round(total_price, 2)
 
 
+
+def change_shipment_status(shipment_id, status):
+    db_generator = get_db()  # Створюємо генератор
+    db: Session = next(db_generator)  # Отримуємо сесію з генератора
+    try:
+        shipment = db.query(Shipment).filter(Shipment.id == shipment_id).first()
+        if not shipment:
+            raise HTTPException(status_code=404, detail="Замовлення не знайдено")
+        shipment.status = status
+        add_shipment_status(shipment.tracking_number, status, db)
+        db.commit()
+        logger.info(f"Змінено статус замовлення {shipment.tracking_number} на {status}")
+    finally:
+        db_generator.close()  # Закриваємо сесію коректно
 
 
 

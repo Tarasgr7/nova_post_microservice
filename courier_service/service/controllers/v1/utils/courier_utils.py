@@ -10,4 +10,5 @@ def get_not_busy_courier(branch_from):
   courier = db.query(Courier).filter(Courier.branch_from == branch_from, Courier.active == True).first()
   if not courier:
     return None
+  courier.active = False
   return courier.id

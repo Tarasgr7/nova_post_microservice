@@ -7,11 +7,11 @@ from db.dependencies import get_db,logger
 from service.controllers.v1.utils.parsel_utils import create_parcel
 
 from sqlalchemy.orm import Session
-RABBITMQ_HOST = "127.0.0.1"
+RABBITMQ_HOST = "rabbitmq"
 RABBITMQ_USER = "admin"
 RABBITMQ_PASS = "admin"
 
-def get_connection(retries=5, delay=5):
+def get_connection(retries=100, delay=5):
     credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
     for i in range(retries):
         try:

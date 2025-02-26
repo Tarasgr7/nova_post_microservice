@@ -3,11 +3,11 @@ import json
 import time
 import uuid
 
-RABBITMQ_HOST = "127.0.0.1"
+RABBITMQ_HOST = "rabbitmq"
 RABBITMQ_USER = "admin"
 RABBITMQ_PASS = "admin"
 
-def get_connection(retries=5, delay=5):
+def get_connection(retries=100, delay=5):
     credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)
     for i in range(retries):
         try:

@@ -4,6 +4,7 @@ from ..utils.auth import user_dependency
 from db.models.shipment_model import Shipment
 from ..utils.worker_utils import verify_worker_role
 from ..utils.shipment_utils import get_shipment,add_shipment_status
+from service.core.rabbitmq.producer import create_shipment_in_service
 
 
 router = APIRouter()
@@ -19,6 +20,8 @@ def accept_shipment(tracking_number: str, db: db_dependency, user: user_dependen
     shipment.status = "awaiting_shipment"
     add_shipment_status(tracking_number, "awaiting_shipment", db)
     db.commit()
+    db.refresh(shipment)
+    create_shipment_in_service(shipment)
     logger.info(f"Посилка прийнята у відділення: {shipment.branch_from}")
     return {"message": "Замовлення прийнято у відділення"}
 
@@ -69,9 +72,13 @@ def pay_shipment(tracking_number: str, db: db_dependency, user: user_dependency)
 def pick_up_shipment(tracking_number: str, db: db_dependency, user: user_dependency):
     verify_worker_role(user)
     shipment = get_shipment(tracking_number, db)
-    if shipment.status != "ready_for_pick_up":
+    if str(shipment.status)[17:] != "ready_for_pick_up":
         raise HTTPException(status_code=400, detail="Замовлення не в стані ready_for_pick_up")
+    print(str(shipment.payment_status)[16:])
+    if str(shipment.payment_status)[16:] != "paid":
+        raise HTTPException(status_code=400, detail="Замовлення не оплачено")
     shipment.status = "picked_up"
+    add_shipment_status(tracking_number, "picked_up", db)
     db.commit()
     logger.info(f"Посилка взята у відділення: {shipment.branch_to}")
     return {"message": "Посилка взята у відділення"}
