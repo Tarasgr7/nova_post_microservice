@@ -25,27 +25,6 @@ def accept_shipment(tracking_number: str, db: db_dependency, user: user_dependen
     logger.info(f"Посилка прийнята у відділення: {shipment.branch_from}")
     return {"message": "Замовлення прийнято у відділення"}
 
-###  Потім переробити отримання даних юзера по штрихкоду, який зберігається в мікросервісі Auth   ###
-
-# @router.get('user_info_by_barcode/{barcode_id}',status_code=status.HTTP_200_OK)
-# async def get_user_info_by_barcode(barcode_id: str, db: db_dependency,user:user_dependency):
-#     verify_worker_role(user)
-#     user_data = db.query(User).filter(User.barcode_id == barcode_id).first()
-#     if not user_data:
-#         raise HTTPException(status_code=404, detail="Користувач не знайдений")
-#     shipment=db.query(Shipment).filter(Shipment.receiver_id == user_data.id).filter(Shipment.status != "picked up").all()
-#     return {
-#         "user_id": user_data.id,
-#         "name": user_data.full_name,
-#         "phone_number": user_data.phone,
-#         "shipments": [
-#             {"tracking_number": shipment.tracking_number, "status": shipment.status}
-#             for shipment in shipment
-#         ]
-#     }
-
-
-
 @router.put("/accept_shipment_from_courier/{tracking_number}", status_code=status.HTTP_202_ACCEPTED)
 def accept_shipment_from_courier(tracking_number: str, db: db_dependency, user: user_dependency):
     verify_worker_role(user)
