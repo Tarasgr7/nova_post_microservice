@@ -1,8 +1,7 @@
+import re
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-import os
-import smtplib
 from datetime import datetime,timedelta
 from typing import Annotated 
 from db.models.user_model import User
@@ -21,6 +20,55 @@ oauth2_bearer=OAuth2PasswordBearer(tokenUrl='api/v1/app_auth/auth/login')
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def validate_ukrainian_phone_number(phone_number):
+    # Регулярний вираз для перевірки українського номера
+    pattern = r"^(?:\+380|380|0)\d{9}$"
+    
+    # Видаляємо пробіли, тире та дужки для уніфікації формату
+    normalized_number = re.sub(r"[ \-()]", "", phone_number)
+    
+    # Перевірка відповідності номеру регулярному виразу
+    if not re.match(pattern, normalized_number):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail="Bad phone number")
+
+
+def validate_password(password: str) -> bool:
+    # Перевірка на мінімальну довжину 8 символів
+    if len(password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Пароль має містити не менше 8 символів."
+        )
+    
+    # Перевірка на наявність великої літери
+    if not re.search(r"[A-Z]", password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Пароль має містити хоча б одну велику літеру."
+        )
+    
+    # Перевірка на наявність малої літери
+    if not re.search(r"[a-z]", password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Пароль має містити хоча б одну малу літеру."
+        )
+    
+    # Перевірка на наявність цифри
+    if not re.search(r"\d", password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Пароль має містити хоча б одну цифру."
+        )
+    
+    # Перевірка на наявність спеціального символу
+    if not re.search(r"[!@#$%^&*()\-_=+[\]{}|;:'\",.<>?/]", password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Пароль має містити хоча б один спеціальний символ."
+        )
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)

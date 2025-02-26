@@ -11,6 +11,7 @@ from service.core.mongo import users_collection
 
 
 
+
 import uuid
 
 
@@ -31,8 +32,8 @@ async def register_user(user: UserCreate, db: db_dependency):
         logger.warning("Номер телефону вже зареєстрований")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail='Phone already registered')
-
-
+    validate_ukrainian_phone_number(user.phone)
+    validate_password(user.password)
     logger.info('Користувач ввів вірну позицію')
     token = str(uuid.uuid4())
     barcode_id=create_barcode_id()
