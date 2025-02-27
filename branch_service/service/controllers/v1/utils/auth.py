@@ -10,11 +10,10 @@ def decode_access_token(token: str):
         id=payload.get('id')
         role=str(payload.get('role'))
         if email is None or id is None :
-          raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail='Could not validate user')
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail='Could not validate user')
         return{'email':email, 'id':id,'role':role}
     except JWTError:
         return None
-    
 
 def check_admin_role(user):
     if user.get("role") != "admin":

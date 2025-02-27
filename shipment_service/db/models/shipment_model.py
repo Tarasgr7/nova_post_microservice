@@ -39,8 +39,7 @@ class Shipment(Base):
         return{
             "id": self.id,
             "branch_from": self.branch_from,
-            "branch_to": self.branch_to,
-        }
+            "branch_to": self.branch_to}
 
 
 class ShipmentStatus(Base):

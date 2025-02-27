@@ -19,6 +19,4 @@ class Courier(Base):
             "user_id": self.user_id,
             "vehicle": self.vehicle,
             "active": self.active,
-            "branch_from": self.branch_from,
-            # додайте інші атрибути, які хочете серіалізувати
-        }
+            "branch_from": self.branch_from}

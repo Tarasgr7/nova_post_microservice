@@ -17,9 +17,9 @@ def create_tracking_number(db):
     status=True
     tracking_number=str(uuid.uuid4().int)[:18]
     while status:
-      if  not db.query(Shipment).filter(Shipment.tracking_number == tracking_number).first():
-        status=False
-        return tracking_number 
+        if  not db.query(Shipment).filter(Shipment.tracking_number == tracking_number).first():
+            status=False
+            return tracking_number 
 
 def existing_status(status):
     statuses = ["created","awaiting_shipment","in_transit","ready_for_pick_up","picked_up"]

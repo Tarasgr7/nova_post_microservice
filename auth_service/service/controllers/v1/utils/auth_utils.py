@@ -25,10 +25,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def validate_ukrainian_phone_number(phone_number):
     # Регулярний вираз для перевірки українського номера
     pattern = r"^(?:\+380|380|0)\d{9}$"
-    
     # Видаляємо пробіли, тире та дужки для уніфікації формату
     normalized_number = re.sub(r"[ \-()]", "", phone_number)
-    
     # Перевірка відповідності номеру регулярному виразу
     if not re.match(pattern, normalized_number):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,detail="Bad phone number")
@@ -39,36 +37,27 @@ def validate_password(password: str) -> bool:
     if len(password) < 8:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Пароль має містити не менше 8 символів."
-        )
-    
+            detail="Пароль має містити не менше 8 символів.")
     # Перевірка на наявність великої літери
     if not re.search(r"[A-Z]", password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Пароль має містити хоча б одну велику літеру."
-        )
-    
+            detail="Пароль має містити хоча б одну велику літеру.")
     # Перевірка на наявність малої літери
     if not re.search(r"[a-z]", password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Пароль має містити хоча б одну малу літеру."
-        )
-    
+            detail="Пароль має містити хоча б одну малу літеру.")
     # Перевірка на наявність цифри
     if not re.search(r"\d", password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Пароль має містити хоча б одну цифру."
-        )
-    
+            detail="Пароль має містити хоча б одну цифру.")
     # Перевірка на наявність спеціального символу
     if not re.search(r"[!@#$%^&*()\-_=+[\]{}|;:'\",.<>?/]", password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Пароль має містити хоча б один спеціальний символ."
-        )
+            detail="Пароль має містити хоча б один спеціальний символ.")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -77,10 +66,10 @@ def hash_password(password):
     return pwd_context.hash(password)
 
 def authenticate_user(email:str,password:str,db):
-   user=db.query(User).filter(User.email==email).first()
-   if not user or not verify_password(password, user.password_hash):
-     return False
-   return user
+    user=db.query(User).filter(User.email==email).first()
+    if not user or not verify_password(password, user.password_hash):
+        return False
+    return user
 
 
 

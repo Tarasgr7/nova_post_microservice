@@ -12,8 +12,7 @@ def get_connection(retries=100, delay=5):
     for i in range(retries):
         try:
             connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials)
-            )
+                pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials))
             return connection
         except pika.exceptions.AMQPConnectionError:
             print(f"RabbitMQ недоступний, спроба {i + 1}/{retries}... Чекаємо {delay} секунд.")

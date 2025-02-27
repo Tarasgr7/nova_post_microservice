@@ -12,7 +12,6 @@ async def read_all_users(db: db_dependency, user: user_dependency):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
     check_admin_role(user)
-    
     users = db.query(User).all()
     logger.info(f"Отримано {len(users)} користувачів")
     return users

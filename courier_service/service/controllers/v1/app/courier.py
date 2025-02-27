@@ -39,9 +39,8 @@ async def start_route(route_id: int, db: db_dependency, user: user_dependency):
     for parcel in parcels:
         parcel.status = "in_transit"
         data={
-           "shipment_id":parcel.shipment_id,
-           "status":"in_transit"
-        }
+            "shipment_id":parcel.shipment_id,
+            "status":"in_transit"}
         change_shipment_status_in_service(data)
     db.commit()
     return {"message": "Route started, all shipments are now in transit"}

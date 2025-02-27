@@ -19,7 +19,6 @@ async def create_branch(branch_data: BranchCreate, db: db_dependency, user: user
     if existing_branch:
         logger.warning(f"Спроба створення відділення з існуючою назвою: {branch_data.name}")
         raise HTTPException(status_code=400, detail="Відділення з такою назвою вже існує")
-
     # Створення нового відділення
     new_branch = Branch(**branch_data.dict())
     db.add(new_branch)
@@ -28,11 +27,8 @@ async def create_branch(branch_data: BranchCreate, db: db_dependency, user: user
     branch_in_mongo={
         "_id":f"branch:{new_branch.id}",
         "latitude":str(new_branch.latitude),
-        "longitude":str(new_branch.longitude)
-    }
-
+        "longitude":str(new_branch.longitude)}
     await collection.insert_one(branch_in_mongo)  # Зберігаємо в БД MongoDB
-
     logger.info(f"Нове відділення створене: {new_branch.name} з ID: {new_branch.id}")
     return new_branch
 
@@ -52,7 +48,6 @@ def get_branch(branch_id: int, db: db_dependency,user:user_dependency):
     if not branch:
         logger.warning(f"Відділення з ID: {branch_id} не знайдено.")
         raise HTTPException(status_code=404, detail="Відділення не знайдено")
-    
     logger.info(f"Відділення з ID: {branch_id} отримано.")
     return branch
 
@@ -61,7 +56,6 @@ def update_branch(branch_id: int, branch_data: BranchUpdate, db: db_dependency, 
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User is not authorized")
     check_admin_role(user)
-
     branch = db.query(Branch).filter(Branch.id == branch_id).first()
     if not branch:
         logger.warning(f"Відділення з ID: {branch_id} не знайдено для оновлення.")
@@ -70,10 +64,8 @@ def update_branch(branch_id: int, branch_data: BranchUpdate, db: db_dependency, 
     # Оновлення полів відділення
     for key, value in update_data.items():
         setattr(branch, key, value)
-
     db.commit()
     db.refresh(branch)
-
     logger.info(f"Відділення з ID: {branch_id} успішно оновлено.")
     return branch
 
@@ -82,23 +74,17 @@ async def delete_branch(branch_id: int, db: db_dependency, user: user_dependency
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User is not authorized")
     check_admin_role(user)
-
     branch = db.query(Branch).filter(Branch.id == branch_id).first()
     if not branch:
         logger.warning(f"Відділення з ID: {branch_id} не знайдено для видалення.")
         raise HTTPException(status_code=404, detail="Відділення не знайдено")
-    
     branch_id_delete = f"branch:{branch_id}"
-
 # Видаляємо документ з MongoDB за _id
     result = await collection.delete_one({"_id": branch_id_delete})
-
 # Перевіряємо, чи було видалено документ
     if result.deleted_count > 0:
         print(f"Відділення з ID {branch_id} успішно видалено.")
-
     db.delete(branch)
     db.commit()
-
     logger.info(f"Відділення з ID: {branch_id} успішно видалено.")
     return {"message": "Відділення успішно видалено"}

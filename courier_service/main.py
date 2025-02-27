@@ -21,7 +21,6 @@ async def startup_event():
     # Запуск асинхронного консумера
     def start_rabbitmq():
         start_consumer_for_auth()
-    
     # Запуск додаткових консумерів у окремому потоці
     rabbitmq_thread = threading.Thread(target=start_rabbitmq, daemon=True)
     rabbitmq_thread.start()

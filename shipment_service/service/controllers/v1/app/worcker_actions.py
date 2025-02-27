@@ -1,7 +1,6 @@
 from fastapi import APIRouter, status, HTTPException
 from db.dependencies import logger,db_dependency
 from ..utils.auth import user_dependency
-from db.models.shipment_model import Shipment
 from ..utils.worker_utils import verify_worker_role
 from ..utils.shipment_utils import get_shipment,add_shipment_status
 from service.core.rabbitmq.producer import create_shipment_in_service

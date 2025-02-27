@@ -11,5 +11,4 @@ def generate_barcode(data: str, filename: str, user: bool):
     code128 = barcode.get_barcode_class('code128')
     barcode_instance = code128(data, writer=ImageWriter())
     barcode_instance.save(barcode_path[:-4])  # Видаляємо ".png" перед збереженням
-
     return barcode_path

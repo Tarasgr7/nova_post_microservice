@@ -21,7 +21,6 @@ async def get_user_info(db: db_dependency, user: user_dependency):
 async def update_user_info(user_data: UserUpdateModel, db: db_dependency, user: user_dependency):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
-    
     update_user = get_user_or_404(db, user.get("id"))
     for key, value in user_data.dict(exclude_unset=True).items():
         setattr(update_user, key, value)

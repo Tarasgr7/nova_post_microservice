@@ -26,12 +26,14 @@ async def register_user(user: UserCreate, db: db_dependency):
     
     if db.query(User).filter_by(email=user.email).first():
         logger.warning("Email вже зареєстрований")
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='Email already registered')
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Email already registered')
     if db.query(User).filter_by(phone=user.phone).first():
         logger.warning("Номер телефону вже зареєстрований")
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail='Phone already registered')
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Phone already registered')
     validate_ukrainian_phone_number(user.phone)
     validate_password(user.password)
     logger.info('Користувач ввів вірну позицію')
@@ -45,23 +47,20 @@ async def register_user(user: UserCreate, db: db_dependency):
         phone=user.phone,
         role=user.role,
         barcode_id=barcode_id,
-        barcode_path=barcode_path
-    )
+        barcode_path=barcode_path)
     db.add(create_user)
     db.commit()
     user_in_mongo={
         "_id":str(create_user.id),
         "email": user.email,
-        "role": user.role
-    }
+        "role": user.role}
     await users_collection.insert_one(user_in_mongo)
     logger.info(f"Користувача {user.email} зареєстровано успішно в MongoDB")
     logger.info(f"Користувача {user.email} зареєстровано успішно")
     return {"message": "Користувач був успішно зареєстрований"}
 
 @router.post("/login", response_model=Token)
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-                                 db: db_dependency):
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],db: db_dependency):
     logger.info(f"Аутентифікація користувача: {form_data.username}")
     
     user = authenticate_user(form_data.username, form_data.password, db)
@@ -73,8 +72,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
         user.email,
         user.id,
         str(user.role),
-        timedelta(minutes=20)
-    )
+        timedelta(minutes=20))
     
     logger.info(f"Користувач {user.email} успішно отримав токен")
     return {'access_token': token, 'token_type': 'bearer'}
