@@ -33,7 +33,7 @@ async def create_branch(branch_data: BranchCreate, db: db_dependency, user: user
     return new_branch
 
 @router.get("/", status_code=status.HTTP_200_OK)
-def get_branches(db: db_dependency,user:user_dependency):
+async def get_branches(db: db_dependency,user:user_dependency):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Авторизація обов'язкова")
     branches = db.query(Branch).all()
@@ -41,7 +41,7 @@ def get_branches(db: db_dependency,user:user_dependency):
     return branches
 
 @router.get("/{branch_id}", status_code=status.HTTP_200_OK)
-def get_branch(branch_id: int, db: db_dependency,user:user_dependency):
+async def get_branch(branch_id: int, db: db_dependency,user:user_dependency):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User is not authorized")
     branch = db.query(Branch).filter(Branch.id == branch_id).first()
@@ -52,7 +52,7 @@ def get_branch(branch_id: int, db: db_dependency,user:user_dependency):
     return branch
 
 @router.put("/{branch_id}", status_code=status.HTTP_200_OK)
-def update_branch(branch_id: int, branch_data: BranchUpdate, db: db_dependency, user: user_dependency):
+async def update_branch(branch_id: int, branch_data: BranchUpdate, db: db_dependency, user: user_dependency):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User is not authorized")
     check_admin_role(user)

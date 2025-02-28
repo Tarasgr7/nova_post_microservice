@@ -9,7 +9,7 @@ from service.core.rabbitmq.producer import create_shipment_in_service
 router = APIRouter()
 
 @router.put("/accept_shipment/{tracking_number}", status_code=status.HTTP_202_ACCEPTED)
-def accept_shipment(tracking_number: str, db: db_dependency, user: user_dependency):
+async def accept_shipment(tracking_number: str, db: db_dependency, user: user_dependency):
     verify_worker_role(user)
     shipment = get_shipment(tracking_number, db)
     
@@ -25,7 +25,7 @@ def accept_shipment(tracking_number: str, db: db_dependency, user: user_dependen
     return {"message": "Замовлення прийнято у відділення"}
 
 @router.put("/accept_shipment_from_courier/{tracking_number}", status_code=status.HTTP_202_ACCEPTED)
-def accept_shipment_from_courier(tracking_number: str, db: db_dependency, user: user_dependency):
+async def accept_shipment_from_courier(tracking_number: str, db: db_dependency, user: user_dependency):
     verify_worker_role(user)
     shipment = get_shipment(tracking_number, db)
     shipment.location = shipment.branch_to
@@ -36,7 +36,7 @@ def accept_shipment_from_courier(tracking_number: str, db: db_dependency, user: 
     return {"message": "Замовлення прийнято у відділення"}
 
 @router.put("/pay_shipment/{tracking_number}", status_code=status.HTTP_202_ACCEPTED)
-def pay_shipment(tracking_number: str, db: db_dependency, user: user_dependency):
+async def pay_shipment(tracking_number: str, db: db_dependency, user: user_dependency):
     verify_worker_role(user)
     shipment = get_shipment(tracking_number, db)
     if shipment.payment_status == "paid":
@@ -47,7 +47,7 @@ def pay_shipment(tracking_number: str, db: db_dependency, user: user_dependency)
     return {"message": "Оплата замовлення успішно завершена"}
 
 @router.put("/pick_up_shipment/{tracking_number}", status_code=status.HTTP_200_OK)
-def pick_up_shipment(tracking_number: str, db: db_dependency, user: user_dependency):
+async def pick_up_shipment(tracking_number: str, db: db_dependency, user: user_dependency):
     verify_worker_role(user)
     shipment = get_shipment(tracking_number, db)
     if str(shipment.status)[17:] != "ready_for_pick_up":
