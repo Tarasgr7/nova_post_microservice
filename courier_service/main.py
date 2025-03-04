@@ -5,7 +5,10 @@ from service.core.rabbitmq.consumer import start_consumer_for_auth
 import threading
 
 # Ініціалізація FastAPI
-app = FastAPI()
+app = FastAPI(
+    docs_url="/api/v1/courier/docs",
+    openapi_url="/api/v1/courier/openapi.json",
+    redoc_url="/api/v1/courier/redoc")
 
 # Створення таблиць у БД
 Base.metadata.create_all(bind=engine)

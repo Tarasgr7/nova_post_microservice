@@ -7,7 +7,10 @@ import threading
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    docs_url="/api/v1/shipment/docs",
+    openapi_url="/api/v1/shipment/openapi.json",
+    redoc_url="/api/v1/shipment/redoc")
 
 app.include_router(root_router,prefix="/api")
 

@@ -1,5 +1,17 @@
 version: '3'
 services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "8080:8080"  # Вхідний трафік перенаправляється на Nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - auth_service
+      - branch_service
+      - courier_service
+      - shipment_service
   rabbitmq:
     image: rabbitmq:3-management
     environment:
@@ -74,7 +86,7 @@ services:
       DB_HOST: branch_postgres
       DB_PORT: 5432
     ports:
-      - "8001:8001"
+      - "8001:8000"
     labels:
       logging: "branch_service"  # Лейбл для Promtail
     volumes:
